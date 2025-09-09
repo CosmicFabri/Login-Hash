@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import hashlib
 import json
+import re
 
 class LoginApp:
     users: object
@@ -18,6 +19,18 @@ class LoginApp:
             self.users = json.load(file)
         
         self.create_widgets()
+
+    # Special character, number and uppercase letter
+    def verify_password(self, password: str):
+        # has_number = any(char.isdigit() for char in password)
+        # has_special_char = any(char in string.punctuation for char in password)
+        # has_uppercase = any(char.isupper() for char in password)
+        # return has_number and has_special_char and has_uppercase
+        reg = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$#%])[A-Za-z\d@$#%]{6,20}$"
+        pat = re.compile(reg)
+        mat = re.search(pat, password)
+
+        return mat
 
     def hash_password(self, password: str):
         data_bytes = password.encode('utf-8')
@@ -131,7 +144,15 @@ class LoginApp:
         
     def signin(self):
         _user = self.user_entry.get()
-        _pass = self.hash_password(self.pass_entry.get())
+        _pass = self.pass_entry.get()
+
+        print(_pass)
+
+        if not self.verify_password(_pass):
+            messagebox.showerror('Error', 'La contraseña debe tener al menos un caracter especial (@, $, #, %), una mayúscula y un número')
+            return
+        
+        _pass = self.hash_password(_pass)
 
         self.users[_user] = _pass
 
